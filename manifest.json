@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "文字快填助手",
+  "description": "建立可重用內容項目，快速帶入網頁輸入框。",
+  "version": "1.0.0",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "permissions": ["storage", "activeTab", "scripting", "sidePanel"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "commands": {
+    "insert-last-used-snippet": {
+      "description": "將最近一次使用的項目插入目前焦點輸入框"
+    },
+    "insert-snippet-slot-01": {
+      "description": "插入綁定於快捷鍵 1 的項目"
+    },
+    "insert-snippet-slot-02": {
+      "description": "插入綁定於快捷鍵 2 的項目"
+    },
+    "insert-snippet-slot-03": {
+      "description": "插入綁定於快捷鍵 3 的項目"
+    },
+    "insert-snippet-slot-04": {
+      "description": "插入綁定於快捷鍵 4 的項目"
+    },
+    "insert-snippet-slot-05": {
+      "description": "插入綁定於快捷鍵 5 的項目"
+    },
+    "insert-snippet-slot-06": {
+      "description": "插入綁定於快捷鍵 6 的項目"
+    },
+    "insert-snippet-slot-07": {
+      "description": "插入綁定於快捷鍵 7 的項目"
+    },
+    "insert-snippet-slot-08": {
+      "description": "插入綁定於快捷鍵 8 的項目"
+    },
+    "insert-snippet-slot-09": {
+      "description": "插入綁定於快捷鍵 9 的項目"
+    },
+    "insert-snippet-slot-10": {
+      "description": "插入綁定於快捷鍵 10 的項目"
+    }
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "文字快填助手"
+  },
+  "side_panel": {
+    "default_path": "popup.html"
+  }
+}

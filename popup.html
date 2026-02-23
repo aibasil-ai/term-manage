@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文字快填助手</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <div class="title-row">
+        <h1>內容項目</h1>
+        <button id="toggle-form-button" type="button">新增項目</button>
+      </div>
+
+      <section class="display-mode-section">
+        <label class="field">
+          <span>顯示模式</span>
+          <select id="display-mode-select">
+            <option value="attached">附著在 Chrome 側邊</option>
+            <option value="popup">原本彈出（工具列）</option>
+            <option value="window">獨立視窗</option>
+          </select>
+          <small class="field-hint">切換後，點擊工具列圖示會依此模式開啟。</small>
+        </label>
+      </section>
+
+      <section id="item-form-panel" class="item-form-panel hidden">
+        <form id="item-form" class="item-form">
+          <label class="field">
+            <span>標題</span>
+            <input id="item-title" name="title" type="text" required maxlength="80" />
+          </label>
+
+          <label class="field">
+            <span>分類（可選）</span>
+            <input id="item-category" name="category" type="text" maxlength="40" />
+          </label>
+
+          <label class="field">
+            <span>快捷鍵槽位（可選）</span>
+            <select id="item-shortcut-slot" name="shortcutSlot">
+              <option value="">不綁定</option>
+            </select>
+            <small class="field-hint">
+              實際按鍵請到 chrome://extensions/shortcuts 設定
+            </small>
+          </label>
+
+          <label class="field">
+            <span>內容</span>
+            <textarea id="item-content" name="content" rows="4" required></textarea>
+          </label>
+
+          <div class="form-actions">
+            <button id="save-button" type="submit">新增項目</button>
+            <button id="cancel-edit-button" type="button" class="secondary">取消</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="items-section">
+        <h2>已建立項目</h2>
+        <div class="filters">
+          <input id="search-input" type="search" placeholder="搜尋標題或內容" />
+          <select id="category-filter"></select>
+        </div>
+        <ul id="items-list" class="items-list"></ul>
+      </section>
+
+      <section class="transfer-section">
+        <h2>資料傳輸</h2>
+        <div class="transfer-actions">
+          <button id="export-button" type="button" class="secondary">匯出 JSON</button>
+          <button id="import-button" type="button" class="secondary">匯入 JSON</button>
+          <input id="import-file-input" type="file" accept="application/json" class="hidden" />
+        </div>
+      </section>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </main>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
