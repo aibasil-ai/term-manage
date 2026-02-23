@@ -68,7 +68,7 @@ npm test
 
 ## 帶入權限與限制
 
-- 已在 `manifest.json` 設定 `host_permissions` 為 `http://*/*` 與 `https://*/*`，可對一般網站輸入框帶入文字。
+- 本專案使用 `activeTab` + `scripting`，僅在你明確操作擴充功能時（例如點擊工具列圖示、使用快捷鍵）對當前分頁帶入文字。
 - 以下頁面因 Chrome 安全限制，無法注入腳本與帶入內容：
   - `chrome://*`
   - `chrome-extension://*`
@@ -88,6 +88,7 @@ npm test
 - `docs/release/chrome-web-store-publish-checklist.zh-TW.md`
 - `docs/release/privacy-policy-template.zh-TW.md`
 - `docs/release/store-screenshots.md`
+- `docs/release/reviewer-note-activeTab.zh-TW.md`
 
 ### 商店素材自動產生
 

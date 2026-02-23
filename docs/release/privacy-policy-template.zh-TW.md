@@ -33,7 +33,6 @@
 - `storage`：儲存你的文字項目與設定
 - `activeTab`、`scripting`：在你主動操作時，將文字插入目前分頁輸入框
 - `sidePanel`：提供側邊欄介面
-- `host_permissions (http/https)`：允許於一般網站執行插入功能
 
 ## 5. 第三方分享
 
