@@ -52,4 +52,4 @@
 
 ## 8. 聯絡方式
 
-請填入你的聯絡信箱：`aibasil@joshlucky.com`
+聯絡信箱：`aibasil@joshlucky.com`
