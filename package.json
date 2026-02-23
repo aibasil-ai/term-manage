@@ -1,14 +1,19 @@
 {
-  "name": "ternmanage-extension",
+  "name": "term-manage-extension",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "package:zip": "bash scripts/package-extension.sh",
+    "screenshots:store": "node scripts/generate-store-screenshots.mjs",
+    "assets:promo": "node scripts/generate-small-promo-tile.mjs",
+    "assets:marquee": "node scripts/generate-marquee-promo.mjs"
   },
   "devDependencies": {
     "jsdom": "^24.1.3",
+    "playwright": "^1.58.2",
     "vitest": "^2.1.8"
   }
 }

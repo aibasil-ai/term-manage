@@ -16,6 +16,7 @@
 - Node.js 18+
 - npm 9+
 - Chrome 瀏覽器
+- `zip` 指令（用於產生上架包）
 
 ## 安裝依賴
 
@@ -55,8 +56,7 @@ npm test
    - 預設為 `附著在 Chrome 側邊`
    - `附著在 Chrome 側邊`：點工具列圖示會開 side panel
    - `原本彈出（工具列）`：回到原本點圖示後彈出的小視窗
-- `獨立視窗`：點工具列圖示會開獨立 popup window
-  - 獨立視窗會優先回到開啟當下的目標分頁進行帶入
+   - `獨立視窗`：點工具列圖示會開獨立 popup window，並優先回到開啟當下的目標分頁進行帶入
 3. 表單預設為收合，先按「新增項目」展開
 4. 在「標題 / 分類 / 內容」輸入後，若需要可指定「快捷鍵槽位」
 5. 按「新增項目」完成建立
@@ -74,6 +74,37 @@ npm test
   - `chrome-extension://*`
   - Chrome Web Store 與其他瀏覽器內建保護頁面
 - 如果看到「Cannot access a chrome:// URL」或類似訊息，請切換到一般網站分頁後再帶入。
+
+## 上架 Chrome Web Store
+
+1. 先執行測試  
+   `npm test`
+2. 產生上架 zip  
+   `npm run package:zip`
+3. 上傳 `dist/term-manage-extension-v<version>.zip` 到 Chrome Web Store Developer Dashboard
+4. 依清單完成商店頁、隱私與權限揭露
+
+上架文件：
+- `docs/release/chrome-web-store-publish-checklist.zh-TW.md`
+- `docs/release/privacy-policy-template.zh-TW.md`
+- `docs/release/store-screenshots.md`
+
+### 商店素材自動產生
+
+```bash
+# 1) 產生最多 5 張商店截圖（1280x800）
+npm run screenshots:store
+
+# 2) 產生小型宣傳圖塊（440x280）
+npm run assets:promo
+
+# 3) 產生 Marquee 宣傳圖（1400x560）
+npm run assets:marquee
+```
+
+輸出目錄：
+- 截圖：`dist/store-screenshots/`
+- 宣傳圖：`dist/store-assets/`
 
 ## 快捷鍵使用（不開 popup）
 
