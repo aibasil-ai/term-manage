@@ -6,7 +6,7 @@
 - [ ] 可正常打包：`npm run package:zip`
 - [ ] `manifest.json` 為 Manifest V3，版本號正確（每次上架都要遞增 `version`）
 - [ ] 不含測試檔、`node_modules`、開發工具檔於上架 zip
-- [ ] 權限最小化（目前實際使用：`storage`、`activeTab`、`scripting`、`sidePanel`）
+- [ ] 權限最小化（目前實際使用：`storage`、`activeTab`、`scripting`、`sidePanel`；網站存取：`http://*/*`、`https://*/*`）
 
 ## 1. 開發者帳號與主控台
 
@@ -33,7 +33,7 @@
 ## 4. 隱私與權限揭露
 
 - [ ] 填寫隱私實務（Privacy practices）
-- [ ] 針對各權限填寫用途說明（尤其是 `scripting`、`activeTab`）
+- [ ] 針對各權限填寫用途說明（尤其是 `scripting`、`activeTab` 與網站存取權限）
 - [ ] 提供公開可存取的隱私權政策 URL（可用 GitHub Pages 或官網）
 - [ ] 確認資料僅用於功能本身，不做未揭露的追蹤或販售
 
@@ -56,6 +56,7 @@
 - `activeTab`: 取得當前作用中分頁，以便把文字帶入使用者選取的輸入框。
 - `scripting`: 注入帶入函式至目前分頁的輸入元素（`input`/`textarea`/`contenteditable`）。
 - `sidePanel`: 提供附著在 Chrome 側邊欄的操作介面。
+- 網站存取權限（`http://*/*`、`https://*/*`）: 允許在一般網站分頁執行帶入腳本；僅在使用者主動操作時觸發。
 
 ### 已知限制（建議寫在描述）
 - 因瀏覽器安全限制，無法在 `chrome://`、Chrome Web Store 等受保護頁面帶入文字。

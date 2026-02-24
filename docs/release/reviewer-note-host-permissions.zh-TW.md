@@ -1,12 +1,13 @@
-# Chrome Web Store 審查備註（activeTab 版本）
+# Chrome Web Store 審查備註（網站存取權限版本）
 
-本版本已依建議改為最小權限模型，不再要求所有網站存取權限。
+本版本使用網站存取權限（`http://*/*`、`https://*/*`）以支援在一般網站的輸入欄位帶入文字內容。
 
-## 變更重點
+## 權限重點
 
-- 已移除 `host_permissions` 的 `http://*/*` 與 `https://*/*`
-- 權限改為僅使用：`storage`、`activeTab`、`scripting`、`sidePanel`
+- 目前權限為：`storage`、`activeTab`、`scripting`、`sidePanel`
+- 目前網站存取範圍為：`http://*/*`、`https://*/*`
 - 文字帶入僅在使用者明確操作時執行（例如點擊擴充功能介面中的「帶入」按鈕，或使用已設定的快捷鍵命令）
+- 網站存取權限用途為在目前分頁執行 `chrome.scripting.executeScript`，將使用者已儲存文字帶入焦點輸入欄位
 
 ## 安全與資料處理說明
 
