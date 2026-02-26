@@ -58,6 +58,24 @@ h2 {
   padding: 10px;
 }
 
+.display-mode-panel {
+  display: block;
+}
+
+.display-mode-summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  user-select: none;
+}
+
+.display-mode-content {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
 .field {
   display: grid;
   gap: 6px;

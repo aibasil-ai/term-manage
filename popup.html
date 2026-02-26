@@ -14,15 +14,20 @@
       </div>
 
       <section class="display-mode-section">
-        <label class="field">
-          <span>顯示模式</span>
-          <select id="display-mode-select">
-            <option value="attached">附著在 Chrome 側邊</option>
-            <option value="popup">原本彈出（工具列）</option>
-            <option value="window">獨立視窗</option>
-          </select>
-          <small class="field-hint">切換後，點擊工具列圖示會依此模式開啟。</small>
-        </label>
+        <details id="display-mode-panel" class="display-mode-panel">
+          <summary class="display-mode-summary">顯示模式</summary>
+          <div class="display-mode-content">
+            <label class="field" for="display-mode-select">
+              <span>開啟方式</span>
+              <select id="display-mode-select">
+                <option value="attached">附著在 Chrome 側邊</option>
+                <option value="popup">原本彈出（工具列）</option>
+                <option value="window">獨立視窗</option>
+              </select>
+              <small class="field-hint">切換後，點擊工具列圖示會依此模式開啟。</small>
+            </label>
+          </div>
+        </details>
       </section>
 
       <section id="item-form-panel" class="item-form-panel hidden">
