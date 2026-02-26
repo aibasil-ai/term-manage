@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>文字快填助手｜產品說明</title>
+    <style>
+      :root {
+        --ink: #111111;
+        --paper: #fffaf0;
+        --mint: #7ee7d8;
+        --sun: #ffd447;
+        --tomato: #ff7f66;
+        --sky: #8bc9ff;
+        --lime: #bcf26f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family: "Noto Sans TC", "Trebuchet MS", "Microsoft JhengHei", sans-serif;
+        background:
+          radial-gradient(circle at 14px 14px, rgba(0, 0, 0, 0.11) 3px, transparent 3px) 0 0 / 28px 28px,
+          linear-gradient(160deg, #fff9c4 0%, #fff8f1 48%, #e4f7ff 100%);
+      }
+
+      .wrap {
+        width: min(1120px, 92vw);
+        margin: 30px auto;
+      }
+
+      .hero {
+        background: var(--sun);
+        border: 4px solid var(--ink);
+        border-radius: 18px;
+        padding: 26px;
+        box-shadow: 8px 8px 0 var(--ink);
+      }
+
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: clamp(30px, 4.6vw, 54px);
+        letter-spacing: 0.03em;
+        line-height: 1.1;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 74ch;
+        font-size: 17px;
+        line-height: 1.72;
+      }
+
+      .hero a {
+        color: var(--ink);
+        text-underline-offset: 3px;
+        font-weight: 800;
+      }
+
+      .grid {
+        margin-top: 18px;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+      }
+
+      .card {
+        border: 4px solid var(--ink);
+        border-radius: 16px;
+        background: var(--paper);
+        padding: 18px;
+        box-shadow: 6px 6px 0 var(--ink);
+        animation: pop-in 0.45s ease both;
+      }
+
+      .card:nth-child(1) {
+        animation-delay: 0.04s;
+      }
+
+      .card:nth-child(2) {
+        animation-delay: 0.08s;
+      }
+
+      .card:nth-child(3) {
+        animation-delay: 0.12s;
+      }
+
+      .card:nth-child(4) {
+        animation-delay: 0.16s;
+      }
+
+      .card:nth-child(5) {
+        animation-delay: 0.2s;
+      }
+
+      .card:nth-child(6) {
+        animation-delay: 0.24s;
+      }
+
+      .card:nth-child(7) {
+        animation-delay: 0.28s;
+      }
+
+      .card:nth-child(8) {
+        animation-delay: 0.32s;
+      }
+
+      .card:nth-child(9) {
+        animation-delay: 0.36s;
+      }
+
+      .card:nth-child(10) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes pop-in {
+        from {
+          opacity: 0;
+          transform: translateY(12px) scale(0.98);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 22px;
+      }
+
+      .card p,
+      .card li {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      .card ul,
+      .card ol {
+        margin: 0;
+        padding-left: 22px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .s8 {
+        grid-column: span 8;
+      }
+
+      .s7 {
+        grid-column: span 7;
+      }
+
+      .s6 {
+        grid-column: span 6;
+      }
+
+      .s5 {
+        grid-column: span 5;
+      }
+
+      .s4 {
+        grid-column: span 4;
+      }
+
+      .tone-mint {
+        background: var(--mint);
+      }
+
+      .tone-sky {
+        background: var(--sky);
+      }
+
+      .tone-lime {
+        background: var(--lime);
+      }
+
+      .tone-tomato {
+        background: var(--tomato);
+      }
+
+      .install-card {
+        display: block;
+        border: 4px solid var(--ink);
+        border-radius: 16px;
+        background: linear-gradient(145deg, #ffffff, #ffe9b0 68%);
+        padding: 18px;
+        color: var(--ink);
+        text-decoration: none;
+        box-shadow: 6px 6px 0 var(--ink);
+        transition: transform 0.14s ease, box-shadow 0.14s ease;
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.5;
+      }
+
+      .install-card strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 22px;
+      }
+
+      .install-card small {
+        display: block;
+        margin-top: 4px;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .install-card:hover,
+      .install-card:focus-visible {
+        transform: translate(-2px, -2px);
+        box-shadow: 8px 8px 0 var(--ink);
+      }
+
+      code {
+        padding: 2px 6px;
+        border: 2px solid var(--ink);
+        border-radius: 8px;
+        background: #fff6d0;
+        font-family: "Consolas", "Courier New", monospace;
+        font-size: 0.9em;
+      }
+
+      .footer {
+        margin-top: 16px;
+        border: 4px solid var(--ink);
+        border-radius: 14px;
+        padding: 14px;
+        text-align: center;
+        background: #ffffff;
+        box-shadow: 6px 6px 0 var(--ink);
+        font-weight: 700;
+      }
+
+      @media (max-width: 860px) {
+        .grid {
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+        }
+
+        .s8,
+        .s7,
+        .s6,
+        .s5,
+        .s4 {
+          grid-column: span 6;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .wrap {
+          width: min(100%, 94vw);
+          margin: 18px auto;
+        }
+
+        .hero,
+        .card,
+        .install-card,
+        .footer {
+          border-width: 3px;
+          box-shadow: 4px 4px 0 var(--ink);
+        }
+
+        .hero {
+          padding: 18px;
+        }
+
+        .card,
+        .install-card {
+          padding: 14px;
+        }
+
+        .hero p,
+        .card p,
+        .card li {
+          font-size: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="hero">
+        <h1>文字快填助手</h1>
+        <p>
+          這是一個專為「重複輸入文字內容」場景打造的 Chrome Extension。你可以先在擴充功能內建立常用片段（例如客服回覆、測試帳號資訊、FAQ 段落、固定格式內容），再一鍵帶入任意網站輸入框，降低重工、提升一致性與輸入速度。若需檢視隱私權內容，可前往
+          <a href="privacy-policy.html">隱私權政策頁面</a>。
+        </p>
+      </section>
+
+      <section class="grid" aria-label="產品用途與功能說明">
+        <article class="card s8 tone-mint">
+          <h2>核心用途</h2>
+          <p>
+            專案核心目標是把「手動重複打字」轉成「管理好內容後快速貼入」。透過集中管理文字片段，團隊或個人可在不同網站快速套用一致用語，減少錯字與遺漏，尤其適合需要大量回覆或固定格式輸入的工作流程。
+          </p>
+        </article>
+
+        <a
+          class="install-card s4"
+          href="https://chromewebstore.google.com/detail/%E6%96%87%E5%AD%97%E5%BF%AB%E5%A1%AB%E5%8A%A9%E6%89%8B/jedmgpomjplojeajhehdmecbhapiegoc?hl=zh-TW&utm_source=ext_sidebar"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <strong>立即安裝擴充功能</strong>
+          前往 Chrome Web Store 安裝「文字快填助手」。
+          <small>點擊後會開啟新分頁</small>
+        </a>
+
+        <article class="card s7 tone-sky">
+          <h2>主要功能</h2>
+          <ul>
+            <li>建立、編輯、刪除內容項目（標題 / 分類 / 內容）</li>
+            <li>關鍵字搜尋與分類篩選</li>
+            <li>JSON 匯出與匯入（可備份與還原）</li>
+            <li>點擊「帶入」將內容插入當前輸入欄位</li>
+            <li>支援快捷鍵插入最近使用項目或指定槽位項目</li>
+          </ul>
+        </article>
+
+        <article class="card s5 tone-lime">
+          <h2>顯示模式</h2>
+          <p>
+            為了貼合不同使用習慣，介面支援三種開啟方式：附著在 Chrome 側邊欄、工具列彈出小窗、獨立視窗。你可以依當下工作流切換，維持輸入與查找內容的效率。
+          </p>
+        </article>
+
+        <article class="card s6">
+          <h2>操作流程</h2>
+          <ol>
+            <li>在擴充功能建立內容項目與分類。</li>
+            <li>切到目標網站並先選取輸入框。</li>
+            <li>回到擴充功能列表點擊「帶入」。</li>
+            <li>或直接使用已綁定的快捷鍵插入。</li>
+            <li>必要時用匯出功能做備份。</li>
+          </ol>
+        </article>
+
+        <article class="card s6 tone-tomato">
+          <h2>資料儲存與同步</h2>
+          <p>
+            項目資料預設儲存在 <code>chrome.storage.sync</code>，可在同一 Google 帳號的 Chrome 裝置間同步；若環境不支援，會回退至 <code>chrome.storage.local</code>。專案本身不建立開發者後端資料庫。
+          </p>
+        </article>
+
+        <article class="card s4">
+          <h2>帶入限制</h2>
+          <ul>
+            <li>僅在你主動操作時執行帶入</li>
+            <li>無法在 <code>chrome://*</code> 等受保護頁面注入</li>
+            <li>需先聚焦目標輸入欄位再插入</li>
+          </ul>
+        </article>
+
+        <article class="card s4">
+          <h2>快速開始</h2>
+          <ul>
+            <li><code>npm install</code></li>
+            <li><code>npm test</code></li>
+            <li>到 <code>chrome://extensions</code> 載入未封裝項目</li>
+          </ul>
+        </article>
+
+        <article class="card s4">
+          <h2>技術基礎</h2>
+          <ul>
+            <li>Chrome Extension Manifest V3</li>
+            <li>原生 JavaScript 模組化結構</li>
+            <li>可測試的插入核心邏輯（Vitest）</li>
+          </ul>
+        </article>
+      </section>
+
+      <footer class="footer">版權所有 © 2026 AIbasil All rights reserved.</footer>
+    </main>
+  </body>
+</html>
