@@ -16,6 +16,10 @@ import {
   findItemIdForCommand
 } from './src/shortcut-binding.js';
 import { injectSnippetIntoActiveElement } from './src/page-inject.js';
+import {
+  APPLY_DISPLAY_MODE_MESSAGE,
+  ACTIVATE_DISPLAY_MODE_MESSAGE
+} from './src/display-mode-messaging.js';
 
 const INSERT_LAST_USED_COMMAND = 'insert-last-used-snippet';
 const SLOT_COMMANDS = new Set(Object.values(SHORTCUT_SLOT_COMMANDS));
@@ -23,6 +27,8 @@ const STANDALONE_WINDOW_WIDTH = 440;
 const STANDALONE_WINDOW_HEIGHT = 760;
 const STANDALONE_WINDOW_PATH = 'popup.html?displayHost=window';
 const ACTION_POPUP_PATH = 'popup.html?displayHost=action-popup';
+const DISPLAY_HOST_WINDOW = 'window';
+const DISPLAY_HOST_ACTION_POPUP = 'action-popup';
 let currentDisplayMode = DISPLAY_MODE_ATTACHED;
 
 async function resolveActiveTabId(tabFromEvent) {
@@ -69,6 +75,86 @@ async function openStandaloneWindow(tabFromEvent) {
   });
 }
 
+function normalizeSourceHost(value) {
+  if (value === DISPLAY_HOST_WINDOW) {
+    return DISPLAY_HOST_WINDOW;
+  }
+  if (value === DISPLAY_HOST_ACTION_POPUP) {
+    return DISPLAY_HOST_ACTION_POPUP;
+  }
+  return 'attached';
+}
+
+function normalizeWindowId(value) {
+  return Number.isInteger(value) ? value : null;
+}
+
+async function resolvePreferredWindowId(senderTab, requestedWindowId) {
+  const normalizedRequested = normalizeWindowId(requestedWindowId);
+  if (normalizedRequested) {
+    return normalizedRequested;
+  }
+
+  const resolvedFromSender = await resolveActiveWindowId(senderTab);
+  if (resolvedFromSender) {
+    return resolvedFromSender;
+  }
+
+  if (!chrome.windows || typeof chrome.windows.getAll !== 'function') {
+    return null;
+  }
+
+  const windows = await chrome.windows.getAll({ populate: false });
+  const normalWindows = windows.filter((windowInfo) => windowInfo.type === 'normal');
+  const focusedWindow = normalWindows.find((windowInfo) => windowInfo.focused);
+  return focusedWindow?.id || normalWindows[0]?.id || null;
+}
+
+async function openActionPopupWithFallback(windowId) {
+  if (!chrome.action || typeof chrome.action.openPopup !== 'function') {
+    return false;
+  }
+
+  if (windowId) {
+    try {
+      await chrome.action.openPopup({ windowId });
+      return true;
+    } catch (error) {
+      const message = String(error?.message || '');
+      const unsupportedOption =
+        message.includes('Unexpected property') || message.includes('No matching signature');
+      if (!unsupportedOption) {
+        return false;
+      }
+      // Older Chrome may not support windowId option.
+    }
+  }
+
+  try {
+    await chrome.action.openPopup();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function closeSidePanelIfPossible(windowId) {
+  if (!chrome.sidePanel || typeof chrome.sidePanel.close !== 'function') {
+    return false;
+  }
+
+  if (!windowId) {
+    return false;
+  }
+
+  try {
+    await chrome.sidePanel.close({ windowId });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function normalizeDisplayMode(value) {
   if (value === DISPLAY_MODE_WINDOW) {
     return DISPLAY_MODE_WINDOW;
@@ -98,6 +184,80 @@ async function applyActionBehaviorByMode(displayMode) {
       popup: displayMode === DISPLAY_MODE_POPUP ? ACTION_POPUP_PATH : ''
     });
   }
+}
+
+async function activateDisplayModeNow(displayMode, sourceHost, sender, requestedWindowId) {
+  const normalizedHost = normalizeSourceHost(sourceHost);
+  const preferredWindowId = await resolvePreferredWindowId(sender?.tab, requestedWindowId);
+  const fromStandaloneWindow = normalizedHost === DISPLAY_HOST_WINDOW;
+  const fromActionPopup = normalizedHost === DISPLAY_HOST_ACTION_POPUP;
+  const fromAttached = normalizedHost === 'attached';
+
+  if (displayMode === DISPLAY_MODE_WINDOW) {
+    if (fromStandaloneWindow) {
+      return { appliedNow: true, shouldCloseCurrentWindow: false };
+    }
+
+    await openStandaloneWindow(sender?.tab);
+    if (fromAttached) {
+      await closeSidePanelIfPossible(preferredWindowId);
+    }
+    return {
+      appliedNow: true,
+      shouldCloseCurrentWindow: fromActionPopup
+    };
+  }
+
+  if (displayMode === DISPLAY_MODE_ATTACHED) {
+    if (fromAttached) {
+      return { appliedNow: true, shouldCloseCurrentWindow: false };
+    }
+
+    if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
+      if (preferredWindowId) {
+        try {
+          await chrome.sidePanel.open({ windowId: preferredWindowId });
+          return {
+            appliedNow: true,
+            shouldCloseCurrentWindow: fromStandaloneWindow || fromActionPopup
+          };
+        } catch (error) {
+          const message = String(error?.message || '');
+          if (message.includes('may only be called in response to a user gesture')) {
+            return {
+              appliedNow: false,
+              shouldCloseCurrentWindow: false,
+              blockedByUserGesture: true
+            };
+          }
+          return { appliedNow: false, shouldCloseCurrentWindow: false };
+        }
+      }
+    }
+
+    return { appliedNow: false, shouldCloseCurrentWindow: false };
+  }
+
+  if (displayMode === DISPLAY_MODE_POPUP) {
+    if (fromActionPopup) {
+      return { appliedNow: true, shouldCloseCurrentWindow: false };
+    }
+
+    const popupOpened = await openActionPopupWithFallback(preferredWindowId);
+    if (popupOpened) {
+      if (fromAttached) {
+        await closeSidePanelIfPossible(preferredWindowId);
+      }
+      return {
+        appliedNow: true,
+        shouldCloseCurrentWindow: fromStandaloneWindow
+      };
+    }
+
+    return { appliedNow: false, shouldCloseCurrentWindow: false };
+  }
+
+  return { appliedNow: false, shouldCloseCurrentWindow: false };
 }
 
 async function syncDisplayModeFromStorage() {
@@ -217,6 +377,62 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   void applyActionBehaviorByMode(nextMode).catch((error) => {
     console.error('[文字快填助手] 更新 action 行為失敗：', error);
   });
+});
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (!message) {
+    return;
+  }
+
+  if (message.type === APPLY_DISPLAY_MODE_MESSAGE) {
+    const nextMode = normalizeDisplayMode(message.mode);
+    currentDisplayMode = nextMode;
+
+    void applyActionBehaviorByMode(nextMode)
+      .then(() => {
+        sendResponse({ ok: true, mode: nextMode });
+      })
+      .catch((error) => {
+        console.error('[文字快填助手] 更新顯示模式設定失敗：', error);
+        sendResponse({
+          ok: false,
+          mode: nextMode,
+          error: error?.message || 'unknown-error'
+        });
+      });
+
+    return true;
+  }
+
+  if (message.type === ACTIVATE_DISPLAY_MODE_MESSAGE) {
+    const nextMode = normalizeDisplayMode(message.mode);
+
+    void activateDisplayModeNow(
+      nextMode,
+      message.sourceHost,
+      _sender,
+      message.targetWindowId
+    )
+      .then((result) => {
+        sendResponse({
+          ok: true,
+          mode: nextMode,
+          ...result
+        });
+      })
+      .catch((error) => {
+        console.error('[文字快填助手] 即時切換顯示模式失敗：', error);
+        sendResponse({
+          ok: false,
+          mode: nextMode,
+          appliedNow: false,
+          shouldCloseCurrentWindow: false,
+          error: error?.message || 'unknown-error'
+        });
+      });
+
+    return true;
+  }
 });
 
 void applyActionBehaviorByMode(currentDisplayMode).catch((error) => {

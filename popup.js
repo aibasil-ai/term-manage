@@ -32,6 +32,10 @@ import {
   closeItemForm,
   isEditingItemForm
 } from './src/item-form-state.js';
+import {
+  notifyDisplayModeApplied,
+  requestDisplayModeActivation
+} from './src/display-mode-messaging.js';
 
 const refs = {
   toggleFormButton: document.querySelector('#toggle-form-button'),
@@ -70,6 +74,8 @@ const runtimeContext = {
   targetTabId: Number.isInteger(targetTabIdFromQuery) ? targetTabIdFromQuery : null,
   targetWindowId: Number.isInteger(targetWindowIdFromQuery) ? targetWindowIdFromQuery : null
 };
+const DISPLAY_HOST_WINDOW = 'window';
+const DISPLAY_HOST_ACTION_POPUP = 'action-popup';
 
 if (runtimeContext.displayHost) {
   document.body.classList.add(`display-host-${runtimeContext.displayHost}`);
@@ -503,11 +509,58 @@ async function handleImportFileChange(event) {
 
 async function handleDisplayModeChange() {
   const selected = refs.displayModeSelect.value;
+  const sourceHost = runtimeContext.displayHost || 'attached';
+  let localActivation = null;
+
+  // Try to preserve user gesture when switching to side panel from another host.
+  if (
+    selected === DISPLAY_MODE_ATTACHED &&
+    sourceHost !== 'attached' &&
+    runtimeContext.targetWindowId &&
+    chrome.sidePanel &&
+    typeof chrome.sidePanel.open === 'function'
+  ) {
+    try {
+      await chrome.sidePanel.open({ windowId: runtimeContext.targetWindowId });
+      localActivation = {
+        appliedNow: true,
+        shouldCloseCurrentWindow:
+          sourceHost === DISPLAY_HOST_WINDOW || sourceHost === DISPLAY_HOST_ACTION_POPUP
+      };
+    } catch {
+      localActivation = null;
+    }
+  }
 
   try {
     const savedMode = await setDisplayMode(selected);
+    await notifyDisplayModeApplied(savedMode);
+    const activationResult = localActivation
+      ? localActivation
+      : await requestDisplayModeActivation(
+          savedMode,
+          runtimeContext.displayHost,
+          runtimeContext.targetWindowId
+        );
     state.displayMode = savedMode;
     refs.displayModeSelect.value = savedMode;
+
+    if (activationResult?.shouldCloseCurrentWindow) {
+      setStatus(`已切換為「${getDisplayModeLabel(savedMode)}」，立即生效。`);
+      window.close();
+      return;
+    }
+
+    if (activationResult?.blockedByUserGesture) {
+      setStatus(`已切換為「${getDisplayModeLabel(savedMode)}」，請再點一次工具列圖示完成切換。`);
+      return;
+    }
+
+    if (activationResult?.appliedNow) {
+      setStatus(`已切換為「${getDisplayModeLabel(savedMode)}」，立即生效。`);
+      return;
+    }
+
     setStatus(`已切換為「${getDisplayModeLabel(savedMode)}」，下次點擊工具列圖示生效。`);
   } catch (error) {
     setStatus(`切換顯示模式失敗：${error.message || '未知錯誤'}`, true);
