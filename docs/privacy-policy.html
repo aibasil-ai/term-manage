@@ -18,6 +18,10 @@
         box-sizing: border-box;
       }
 
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+
       body {
         margin: 0;
         color: var(--ink);
@@ -186,28 +190,87 @@
         }
       }
 
-      @media (max-width: 560px) {
+      @media (max-width: 760px) {
+        body {
+          background: #fffef9;
+        }
+
         .wrap {
-          width: min(100%, 94vw);
-          margin: 18px auto;
+          width: min(100%, 96vw);
+          margin: 12px auto 20px;
         }
 
-        .hero,
-        .card,
-        .footer {
-          border-width: 3px;
-          box-shadow: 4px 4px 0 var(--ink);
-        }
-
-        .hero,
-        .card {
+        .hero {
+          border-width: 2px;
+          border-radius: 12px;
+          box-shadow: none;
           padding: 14px;
+          margin-bottom: 10px;
+          background: #ffe89a;
         }
 
-        .hero p,
+        .hero h1 {
+          font-size: clamp(24px, 7vw, 32px);
+        }
+
+        .hero p {
+          font-size: 15px;
+          line-height: 1.6;
+        }
+
+        .grid {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 10px;
+        }
+
+        .s12,
+        .s8,
+        .s6,
+        .s4 {
+          grid-column: span 1;
+        }
+
+        .card {
+          border-width: 2px;
+          border-radius: 12px;
+          box-shadow: none;
+          padding: 14px;
+          background: #ffffff;
+          animation: none;
+        }
+
+        .tone-mint,
+        .tone-sky,
+        .tone-tomato {
+          background: #ffffff;
+        }
+
+        .card h2 {
+          margin-bottom: 8px;
+          font-size: 19px;
+          line-height: 1.35;
+        }
+
         .card p,
         .card li {
-          font-size: 15px;
+          font-size: 16px;
+          line-height: 1.85;
+        }
+
+        .card ul {
+          margin-top: 8px;
+          padding-left: 20px;
+          gap: 10px;
+        }
+
+        .footer {
+          margin-top: 12px;
+          border-width: 2px;
+          border-radius: 12px;
+          box-shadow: none;
+          padding: 12px;
+          background: #ffffff;
+          font-size: 14px;
         }
       }
     </style>
