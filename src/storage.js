@@ -49,6 +49,48 @@ function normalizeInputItem(input) {
   return { title, content, category };
 }
 
+function normalizeImportedId(value) {
+  const id = typeof value === 'string' ? value.trim() : '';
+  return id || '';
+}
+
+function normalizeImportedTimestamp(value, fallback = null) {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+  const text = value.trim();
+  if (!text) {
+    return fallback;
+  }
+  const epoch = Date.parse(text);
+  if (Number.isNaN(epoch)) {
+    return fallback;
+  }
+  return text;
+}
+
+function toEpochMillis(isoText) {
+  if (typeof isoText !== 'string') {
+    return null;
+  }
+  const value = Date.parse(isoText);
+  return Number.isNaN(value) ? null : value;
+}
+
+function shouldUseImportedByUpdatedAt(currentItem, importedItem, hasImportedUpdatedAt) {
+  if (!hasImportedUpdatedAt) {
+    return true;
+  }
+
+  const currentUpdated = toEpochMillis(currentItem?.updatedAt);
+  const importedUpdated = toEpochMillis(importedItem?.updatedAt);
+  if (currentUpdated === null || importedUpdated === null) {
+    return true;
+  }
+
+  return importedUpdated > currentUpdated;
+}
+
 function generateId() {
   if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
     return globalThis.crypto.randomUUID();
@@ -157,6 +199,105 @@ export async function replaceAllItems(inputItems, storage = getDefaultStorageAre
   });
 
   return normalized;
+}
+
+export async function mergeImportedItems(inputItems, storage = getDefaultStorageArea()) {
+  if (!Array.isArray(inputItems)) {
+    throw new Error('items must be an array');
+  }
+
+  const timestamp = nowIso();
+  const existingItems = await loadItems(storage);
+  const existingById = new Map(existingItems.map((item) => [item.id, item]));
+  const updatedExistingItems = new Map();
+  const addedItems = [];
+  const addedItemIndexById = new Map();
+  const updatedExistingIds = new Set();
+  let addedCount = 0;
+
+  inputItems.forEach((input) => {
+    const { title, content, category } = normalizeInputItem(input);
+    const importedId = normalizeImportedId(input?.id);
+    const importedCreatedAt = normalizeImportedTimestamp(input?.createdAt, null);
+    const importedUpdatedAt = normalizeImportedTimestamp(input?.updatedAt, null);
+    const hasImportedUpdatedAt = typeof importedUpdatedAt === 'string';
+
+    if (importedId && existingById.has(importedId)) {
+      const current = updatedExistingItems.get(importedId) || existingById.get(importedId);
+      const importedCandidate = {
+        ...current,
+        title,
+        content,
+        category,
+        updatedAt: importedUpdatedAt || timestamp
+      };
+      if (!shouldUseImportedByUpdatedAt(current, importedCandidate, hasImportedUpdatedAt)) {
+        return;
+      }
+
+      updatedExistingItems.set(importedId, {
+        ...current,
+        title,
+        content,
+        category,
+        updatedAt: importedUpdatedAt || timestamp
+      });
+      updatedExistingIds.add(importedId);
+      return;
+    }
+
+    if (importedId && addedItemIndexById.has(importedId)) {
+      const index = addedItemIndexById.get(importedId);
+      const current = addedItems[index];
+      const importedCandidate = {
+        ...current,
+        title,
+        content,
+        category,
+        updatedAt: importedUpdatedAt || timestamp
+      };
+      if (!shouldUseImportedByUpdatedAt(current, importedCandidate, hasImportedUpdatedAt)) {
+        return;
+      }
+
+      addedItems[index] = {
+        ...current,
+        title,
+        content,
+        category,
+        updatedAt: importedUpdatedAt || timestamp
+      };
+      return;
+    }
+
+    const nextId =
+      importedId && !existingById.has(importedId) && !addedItemIndexById.has(importedId)
+        ? importedId
+        : generateId();
+    const nextItem = {
+      id: nextId,
+      title,
+      content,
+      category,
+      createdAt: importedCreatedAt || timestamp,
+      updatedAt: importedUpdatedAt || timestamp
+    };
+    addedItems.push(nextItem);
+    addedItemIndexById.set(nextId, addedItems.length - 1);
+    addedCount += 1;
+  });
+
+  const mergedExistingItems = existingItems.map(
+    (item) => updatedExistingItems.get(item.id) || item
+  );
+  const mergedItems = [...addedItems, ...mergedExistingItems];
+  await saveItems(mergedItems, storage);
+
+  return {
+    items: mergedItems,
+    addedCount,
+    updatedCount: updatedExistingIds.size
+  };
 }
 
 export async function setLastUsedItemId(id, storage = getDefaultStorageArea()) {

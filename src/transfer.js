@@ -10,12 +10,32 @@ function normalizeImportedItem(input, index) {
   const title = ensureNonEmptyString(input?.title, 'title', index);
   const content = ensureNonEmptyString(input?.content, 'content', index);
 
+  const idText = typeof input?.id === 'string' ? input.id.trim() : '';
   const categoryText = typeof input?.category === 'string' ? input.category.trim() : '';
-  if (categoryText) {
-    return { title, content, category: categoryText };
+  const createdAtText = typeof input?.createdAt === 'string' ? input.createdAt.trim() : '';
+  const updatedAtText = typeof input?.updatedAt === 'string' ? input.updatedAt.trim() : '';
+  const normalized = {
+    title,
+    content
+  };
+
+  if (idText) {
+    normalized.id = idText;
   }
 
-  return { title, content };
+  if (categoryText) {
+    normalized.category = categoryText;
+  }
+
+  if (createdAtText) {
+    normalized.createdAt = createdAtText;
+  }
+
+  if (updatedAtText) {
+    normalized.updatedAt = updatedAtText;
+  }
+
+  return normalized;
 }
 
 export function serializeItemsForExport(items) {

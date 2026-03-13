@@ -3,7 +3,7 @@ import {
   addItem,
   updateItem,
   deleteItem,
-  replaceAllItems,
+  mergeImportedItems,
   setLastUsedItemId,
   getShortcutBindings,
   setShortcutBindingForSlot,
@@ -597,13 +597,15 @@ async function handleImportFileChange(event) {
   try {
     const text = await file.text();
     const importedItems = parseItemsFromImportText(text);
-    await replaceAllItems(importedItems);
+    const mergedResult = await mergeImportedItems(importedItems);
     state.searchQuery = '';
     state.selectedCategory = '全部';
     refs.searchInput.value = '';
     closeAndResetForm();
     await refreshItems();
-    setStatus(`已匯入 ${importedItems.length} 筆項目。`);
+    setStatus(
+      `已合併匯入 ${importedItems.length} 筆項目（新增 ${mergedResult.addedCount}、更新 ${mergedResult.updatedCount}）。`
+    );
   } catch (error) {
     setStatus(`匯入失敗：${error.message || '未知錯誤'}`, true);
   }

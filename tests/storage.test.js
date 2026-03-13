@@ -12,6 +12,7 @@ import {
   updateItem,
   deleteItem,
   replaceAllItems,
+  mergeImportedItems,
   setLastUsedItemId,
   getLastUsedItemId,
   getShortcutBindings,
@@ -214,6 +215,133 @@ describe('storage module', () => {
       title: 'B',
       content: 'BBB',
       category: '未分類'
+    });
+  });
+
+  it('merges imported items by id and preserves existing items', async () => {
+    const first = await addItem(
+      { title: '第一筆', content: 'A', category: '分類A' },
+      storage
+    );
+    const second = await addItem(
+      { title: '第二筆', content: 'B', category: '分類B' },
+      storage
+    );
+
+    const result = await mergeImportedItems(
+      [
+        { id: second.id, title: '第二筆-更新', content: 'B2', category: '分類B2' },
+        { id: 'imported-new-id', title: '第三筆', content: 'C', category: '分類C' }
+      ],
+      storage
+    );
+
+    expect(result.addedCount).toBe(1);
+    expect(result.updatedCount).toBe(1);
+
+    const persisted = storage._dump()[STORAGE_KEY];
+    expect(persisted).toHaveLength(3);
+
+    const updated = persisted.find((item) => item.id === second.id);
+    expect(updated).toMatchObject({
+      id: second.id,
+      title: '第二筆-更新',
+      content: 'B2',
+      category: '分類B2'
+    });
+
+    const untouched = persisted.find((item) => item.id === first.id);
+    expect(untouched).toMatchObject({
+      id: first.id,
+      title: '第一筆',
+      content: 'A',
+      category: '分類A'
+    });
+
+    const added = persisted.find((item) => item.id === 'imported-new-id');
+    expect(added).toMatchObject({
+      id: 'imported-new-id',
+      title: '第三筆',
+      content: 'C',
+      category: '分類C'
+    });
+  });
+
+  it('keeps existing item when imported same id has older updatedAt', async () => {
+    await storage.set({
+      [STORAGE_KEY]: [
+        {
+          id: 'same-id',
+          title: '本地較新',
+          content: 'local-new',
+          category: 'A',
+          createdAt: '2026-03-01T00:00:00.000Z',
+          updatedAt: '2026-03-10T00:00:00.000Z'
+        }
+      ]
+    });
+
+    const result = await mergeImportedItems(
+      [
+        {
+          id: 'same-id',
+          title: '匯入較舊',
+          content: 'import-old',
+          category: 'B',
+          updatedAt: '2026-03-05T00:00:00.000Z'
+        }
+      ],
+      storage
+    );
+
+    expect(result.addedCount).toBe(0);
+    expect(result.updatedCount).toBe(0);
+    const [persisted] = storage._dump()[STORAGE_KEY];
+    expect(persisted).toMatchObject({
+      id: 'same-id',
+      title: '本地較新',
+      content: 'local-new',
+      category: 'A',
+      updatedAt: '2026-03-10T00:00:00.000Z'
+    });
+  });
+
+  it('updates existing item when imported same id has newer updatedAt', async () => {
+    await storage.set({
+      [STORAGE_KEY]: [
+        {
+          id: 'same-id',
+          title: '本地較舊',
+          content: 'local-old',
+          category: 'A',
+          createdAt: '2026-03-01T00:00:00.000Z',
+          updatedAt: '2026-03-05T00:00:00.000Z'
+        }
+      ]
+    });
+
+    const result = await mergeImportedItems(
+      [
+        {
+          id: 'same-id',
+          title: '匯入較新',
+          content: 'import-new',
+          category: 'B',
+          updatedAt: '2026-03-10T00:00:00.000Z'
+        }
+      ],
+      storage
+    );
+
+    expect(result.addedCount).toBe(0);
+    expect(result.updatedCount).toBe(1);
+    const [persisted] = storage._dump()[STORAGE_KEY];
+    expect(persisted).toMatchObject({
+      id: 'same-id',
+      title: '匯入較新',
+      content: 'import-new',
+      category: 'B',
+      updatedAt: '2026-03-10T00:00:00.000Z'
     });
   });
 

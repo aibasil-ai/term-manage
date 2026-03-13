@@ -49,6 +49,31 @@ describe('transfer module', () => {
     });
   });
 
+  it('keeps item id when import payload contains id', () => {
+    const text = JSON.stringify({
+      items: [
+        {
+          id: 'item-123',
+          title: 'X',
+          content: 'Y',
+          category: 'Z',
+          createdAt: '2026-03-01T01:00:00.000Z',
+          updatedAt: '2026-03-02T01:00:00.000Z'
+        }
+      ]
+    });
+
+    const items = parseItemsFromImportText(text);
+    expect(items[0]).toMatchObject({
+      id: 'item-123',
+      title: 'X',
+      content: 'Y',
+      category: 'Z',
+      createdAt: '2026-03-01T01:00:00.000Z',
+      updatedAt: '2026-03-02T01:00:00.000Z'
+    });
+  });
+
   it('throws for invalid JSON', () => {
     expect(() => parseItemsFromImportText('{ bad json')).toThrow(/JSON/i);
   });
