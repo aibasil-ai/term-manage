@@ -86,6 +86,22 @@ describe('storage module', () => {
     });
   });
 
+  it('prepends newly added item to top of list', async () => {
+    const first = await addItem(
+      { title: '第一筆', content: 'A' },
+      storage
+    );
+    const second = await addItem(
+      { title: '第二筆', content: 'B' },
+      storage
+    );
+
+    const persisted = storage._dump()[STORAGE_KEY];
+    expect(persisted).toHaveLength(2);
+    expect(persisted[0].id).toBe(second.id);
+    expect(persisted[1].id).toBe(first.id);
+  });
+
   it('adds item with trimmed category', async () => {
     const created = await addItem(
       {

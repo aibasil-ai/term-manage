@@ -86,7 +86,7 @@ export async function addItem(input, storage = getDefaultStorageArea()) {
   };
 
   const items = await loadItems(storage);
-  const nextItems = [...items, item];
+  const nextItems = [item, ...items];
   await saveItems(nextItems, storage);
   return item;
 }

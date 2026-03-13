@@ -36,9 +36,17 @@ import {
   notifyDisplayModeApplied,
   requestDisplayModeActivation
 } from './src/display-mode-messaging.js';
+import { getSyncUsageStats } from './src/storage-area.js';
 
 const refs = {
+  toggleSettingsButton: document.querySelector('#toggle-settings-button'),
+  toggleSettingsLabel: document.querySelector('#toggle-settings-label'),
+  toggleDisplayModeButton: document.querySelector('#toggle-display-mode-button'),
+  toggleDisplayModeLabel: document.querySelector('#toggle-display-mode-label'),
   toggleFormButton: document.querySelector('#toggle-form-button'),
+  toggleFormLabel: document.querySelector('#toggle-form-label'),
+  displayModeSection: document.querySelector('#display-mode-section'),
+  settingsPanel: document.querySelector('#settings-panel'),
   formPanel: document.querySelector('#item-form-panel'),
   form: document.querySelector('#item-form'),
   titleInput: document.querySelector('#item-title'),
@@ -54,6 +62,9 @@ const refs = {
   exportButton: document.querySelector('#export-button'),
   importButton: document.querySelector('#import-button'),
   importFileInput: document.querySelector('#import-file-input'),
+  syncUsageText: document.querySelector('#sync-usage-text'),
+  syncUsageMeter: document.querySelector('#sync-usage-meter'),
+  syncUsageBar: document.querySelector('#sync-usage-bar'),
   status: document.querySelector('#status')
 };
 
@@ -63,7 +74,9 @@ const state = {
   shortcutBindings: {},
   displayMode: DISPLAY_MODE_ATTACHED,
   searchQuery: '',
-  selectedCategory: '全部'
+  selectedCategory: '全部',
+  isDisplayModeVisible: false,
+  isSettingsVisible: false
 };
 const query = new URLSearchParams(window.location.search);
 const displayHost = query.get('displayHost') || '';
@@ -130,7 +143,32 @@ function applyFormState() {
   const isEditing = isEditingItemForm(state.itemForm);
   refs.saveButton.textContent = isEditing ? '更新項目' : '新增項目';
   refs.cancelEditButton.textContent = isEditing ? '取消編輯' : '取消';
-  refs.toggleFormButton.textContent = state.itemForm.isVisible ? '收合表單' : '新增項目';
+  const formButtonLabel = state.itemForm.isVisible ? '收合表單' : '新增項目';
+  if (refs.toggleFormLabel) {
+    refs.toggleFormLabel.textContent = formButtonLabel;
+  }
+  refs.toggleFormButton.setAttribute('aria-label', formButtonLabel);
+  refs.toggleFormButton.setAttribute('title', formButtonLabel);
+  refs.toggleFormButton.setAttribute('aria-expanded', String(state.itemForm.isVisible));
+}
+
+function applyPanelVisibility() {
+  refs.displayModeSection.classList.toggle('hidden', !state.isDisplayModeVisible);
+  refs.settingsPanel.classList.toggle('hidden', !state.isSettingsVisible);
+  const displayModeLabel = state.isDisplayModeVisible ? '收合模式' : '顯示模式';
+  const settingsLabel = state.isSettingsVisible ? '關閉設定' : '設定';
+  if (refs.toggleDisplayModeLabel) {
+    refs.toggleDisplayModeLabel.textContent = displayModeLabel;
+  }
+  if (refs.toggleSettingsLabel) {
+    refs.toggleSettingsLabel.textContent = settingsLabel;
+  }
+  refs.toggleDisplayModeButton.setAttribute('aria-label', displayModeLabel);
+  refs.toggleSettingsButton.setAttribute('aria-label', settingsLabel);
+  refs.toggleDisplayModeButton.setAttribute('title', displayModeLabel);
+  refs.toggleSettingsButton.setAttribute('title', settingsLabel);
+  refs.toggleDisplayModeButton.setAttribute('aria-expanded', String(state.isDisplayModeVisible));
+  refs.toggleSettingsButton.setAttribute('aria-expanded', String(state.isSettingsVisible));
 }
 
 function closeAndResetForm() {
@@ -200,12 +238,76 @@ async function refreshItems() {
   state.shortcutBindings = shortcutBindings;
   renderCategoryFilterOptions();
   renderItems();
+  await refreshSyncUsage();
 }
 
 async function refreshDisplayMode() {
   const displayMode = await getDisplayMode();
   state.displayMode = displayMode;
   refs.displayModeSelect.value = displayMode;
+}
+
+function formatByteSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) {
+    return '0 B';
+  }
+
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  const kb = bytes / 1024;
+  if (kb < 1024) {
+    return `${kb.toFixed(1)} KB`;
+  }
+
+  const mb = kb / 1024;
+  return `${mb.toFixed(2)} MB`;
+}
+
+function clampPercentage(value) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  if (value < 0) {
+    return 0;
+  }
+  if (value > 100) {
+    return 100;
+  }
+  return value;
+}
+
+function updateSyncUsageBar(percentage) {
+  const next = clampPercentage(percentage);
+  refs.syncUsageBar.style.width = `${next.toFixed(1)}%`;
+  refs.syncUsageMeter.setAttribute('aria-valuenow', String(next.toFixed(1)));
+}
+
+async function refreshSyncUsage() {
+  try {
+    const usage = await getSyncUsageStats();
+    if (!usage) {
+      refs.syncUsageText.textContent = '目前環境不支援同步儲存空間容量統計。';
+      updateSyncUsageBar(0);
+      return;
+    }
+
+    const usedText = formatByteSize(usage.bytesInUse);
+    const quotaText = usage.quotaBytes ? formatByteSize(usage.quotaBytes) : '未知';
+    if (!usage.quotaBytes || usage.quotaBytes <= 0) {
+      refs.syncUsageText.textContent = `${usedText} / ${quotaText}`;
+      updateSyncUsageBar(0);
+      return;
+    }
+
+    const ratio = clampPercentage((usage.bytesInUse / usage.quotaBytes) * 100);
+    refs.syncUsageText.textContent = `${usedText} / ${quotaText} (${ratio.toFixed(1)}%)`;
+    updateSyncUsageBar(ratio);
+  } catch {
+    refs.syncUsageText.textContent = '讀取同步儲存空間容量統計失敗。';
+    updateSyncUsageBar(0);
+  }
 }
 
 function renderEmptyState(message) {
@@ -544,6 +646,7 @@ async function handleDisplayModeChange() {
         );
     state.displayMode = savedMode;
     refs.displayModeSelect.value = savedMode;
+    await refreshSyncUsage();
 
     if (activationResult?.shouldCloseCurrentWindow) {
       setStatus(`已切換為「${getDisplayModeLabel(savedMode)}」，立即生效。`);
@@ -580,6 +683,26 @@ refs.toggleFormButton.addEventListener('click', () => {
   clearStatus();
 });
 
+refs.toggleDisplayModeButton.addEventListener('click', () => {
+  const nextVisible = !state.isDisplayModeVisible;
+  state.isDisplayModeVisible = nextVisible;
+  if (nextVisible) {
+    state.isSettingsVisible = false;
+  }
+  applyPanelVisibility();
+  clearStatus();
+});
+
+refs.toggleSettingsButton.addEventListener('click', () => {
+  const nextVisible = !state.isSettingsVisible;
+  state.isSettingsVisible = nextVisible;
+  if (nextVisible) {
+    state.isDisplayModeVisible = false;
+  }
+  applyPanelVisibility();
+  clearStatus();
+});
+
 refs.cancelEditButton.addEventListener('click', () => {
   closeAndResetForm();
   clearStatus();
@@ -613,6 +736,7 @@ refs.displayModeSelect.addEventListener('change', () => {
 
 renderShortcutSlotOptions();
 applyFormState();
+applyPanelVisibility();
 
 void (async () => {
   try {

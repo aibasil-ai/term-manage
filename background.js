@@ -20,6 +20,10 @@ import {
   APPLY_DISPLAY_MODE_MESSAGE,
   ACTIVATE_DISPLAY_MODE_MESSAGE
 } from './src/display-mode-messaging.js';
+import {
+  openOrFocusStandaloneWindow,
+  clearStoredStandaloneWindowIfMatches
+} from './src/standalone-window.js';
 
 const INSERT_LAST_USED_COMMAND = 'insert-last-used-snippet';
 const SLOT_COMMANDS = new Set(Object.values(SHORTCUT_SLOT_COMMANDS));
@@ -67,9 +71,8 @@ async function openStandaloneWindow(tabFromEvent) {
     popupUrl.searchParams.set('targetWindowId', String(targetWindowId));
   }
 
-  await chrome.windows.create({
-    type: 'popup',
-    url: popupUrl.toString(),
+  await openOrFocusStandaloneWindow(chrome, {
+    popupUrl: popupUrl.toString(),
     width: STANDALONE_WINDOW_WIDTH,
     height: STANDALONE_WINDOW_HEIGHT
   });
@@ -360,6 +363,12 @@ chrome.commands.onCommand.addListener((command, tab) => {
 chrome.action.onClicked.addListener((tab) => {
   void handleToolbarActionClick(tab).catch((error) => {
     console.error('[文字快填助手] 工具列點擊處理失敗：', error);
+  });
+});
+
+chrome.windows.onRemoved.addListener((windowId) => {
+  void clearStoredStandaloneWindowIfMatches(chrome, windowId).catch((error) => {
+    console.error('[文字快填助手] 清理獨立視窗狀態失敗：', error);
   });
 });
 

@@ -9,19 +9,16 @@ function loadPopupDocument() {
 }
 
 describe('popup display mode panel', () => {
-  it('renders display mode as collapsed details panel by default', () => {
+  it('renders display mode section hidden by default and controlled by a toggle button', () => {
     const document = loadPopupDocument();
-    const panel = document.querySelector('#display-mode-panel');
+    const toggleButton = document.querySelector('#toggle-display-mode-button');
+    const section = document.querySelector('#display-mode-section');
 
-    expect(panel).not.toBeNull();
-    expect(panel?.tagName).toBe('DETAILS');
-    expect(panel?.hasAttribute('open')).toBe(false);
+    expect(toggleButton).not.toBeNull();
+    expect(section).not.toBeNull();
+    expect(section?.classList.contains('hidden')).toBe(true);
 
-    const summary = panel?.querySelector('summary');
-    expect(summary).not.toBeNull();
-    expect(summary?.textContent).toContain('顯示模式');
-
-    const select = panel?.querySelector('#display-mode-select');
+    const select = section?.querySelector('#display-mode-select');
     expect(select).not.toBeNull();
   });
 });

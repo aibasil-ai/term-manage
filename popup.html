@@ -10,24 +10,100 @@
     <main class="app">
       <div class="title-row">
         <h1>內容項目</h1>
-        <button id="toggle-form-button" type="button">新增項目</button>
+        <div class="title-actions">
+          <button
+            id="toggle-settings-button"
+            type="button"
+            class="secondary icon-button icon-only-button"
+            aria-label="設定"
+            title="設定"
+          >
+            <span class="button-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V22a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.2.49.68.83 1.21 1H21a2 2 0 1 1 0 4h-.39c-.53.17-1.01.51-1.21 1z"
+                ></path>
+              </svg>
+            </span>
+            <span id="toggle-settings-label" class="sr-only">設定</span>
+          </button>
+          <button
+            id="toggle-display-mode-button"
+            type="button"
+            class="secondary icon-button icon-only-button"
+            aria-label="顯示模式"
+            title="顯示模式"
+          >
+            <span class="button-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <rect x="3" y="4" width="18" height="12" rx="2"></rect>
+                <path d="M10 20h4"></path>
+                <path d="M8 16h8"></path>
+              </svg>
+            </span>
+            <span id="toggle-display-mode-label" class="sr-only">顯示模式</span>
+          </button>
+          <button
+            id="toggle-form-button"
+            type="button"
+            class="icon-button icon-only-button"
+            aria-label="新增項目"
+            title="新增項目"
+          >
+            <span class="button-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+              </svg>
+            </span>
+            <span id="toggle-form-label" class="sr-only">新增項目</span>
+          </button>
+        </div>
       </div>
 
-      <section class="display-mode-section">
-        <details id="display-mode-panel" class="display-mode-panel">
-          <summary class="display-mode-summary">顯示模式</summary>
-          <div class="display-mode-content">
-            <label class="field" for="display-mode-select">
-              <span>開啟方式</span>
-              <select id="display-mode-select">
-                <option value="attached">附著在 Chrome 側邊</option>
-                <option value="popup">原本彈出（工具列）</option>
-                <option value="window">獨立視窗</option>
-              </select>
-              <small class="field-hint">切換後，點擊工具列圖示會依此模式開啟。</small>
-            </label>
+      <section id="display-mode-section" class="display-mode-section hidden">
+        <h2>顯示模式</h2>
+        <div class="display-mode-content">
+          <label class="field" for="display-mode-select">
+            <span>開啟方式</span>
+            <select id="display-mode-select">
+              <option value="attached">附著在 Chrome 側邊</option>
+              <option value="popup">原本彈出（工具列）</option>
+              <option value="window">獨立視窗</option>
+            </select>
+            <small class="field-hint">切換後，點擊工具列圖示會依此模式開啟。</small>
+          </label>
+        </div>
+      </section>
+
+      <section id="settings-panel" class="settings-panel hidden">
+        <h2>設定</h2>
+
+        <section class="sync-usage-section">
+          <h3>同步儲存空間使用量</h3>
+          <p id="sync-usage-text" class="sync-usage-text">讀取中...</p>
+          <div
+            id="sync-usage-meter"
+            class="sync-usage-meter"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            aria-label="同步儲存空間使用量"
+          >
+            <div id="sync-usage-bar" class="sync-usage-bar"></div>
           </div>
-        </details>
+        </section>
+
+        <section class="transfer-section">
+          <h3>資料傳輸</h3>
+          <div class="transfer-actions">
+            <button id="export-button" type="button" class="secondary">匯出 JSON</button>
+            <button id="import-button" type="button" class="secondary">匯入 JSON</button>
+            <input id="import-file-input" type="file" accept="application/json" class="hidden" />
+          </div>
+        </section>
       </section>
 
       <section id="item-form-panel" class="item-form-panel hidden">
@@ -65,21 +141,14 @@
       </section>
 
       <section class="items-section">
-        <h2>已建立項目</h2>
-        <div class="filters">
-          <input id="search-input" type="search" placeholder="搜尋標題或內容" />
-          <select id="category-filter"></select>
+        <div class="items-header">
+          <h2>已建立項目</h2>
+          <div class="filters">
+            <input id="search-input" type="search" placeholder="搜尋標題或內容" />
+            <select id="category-filter"></select>
+          </div>
         </div>
         <ul id="items-list" class="items-list"></ul>
-      </section>
-
-      <section class="transfer-section">
-        <h2>資料傳輸</h2>
-        <div class="transfer-actions">
-          <button id="export-button" type="button" class="secondary">匯出 JSON</button>
-          <button id="import-button" type="button" class="secondary">匯入 JSON</button>
-          <input id="import-file-input" type="file" accept="application/json" class="hidden" />
-        </div>
       </section>
 
       <p id="status" class="status" role="status" aria-live="polite"></p>
